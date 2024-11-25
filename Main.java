@@ -1,55 +1,76 @@
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
-        String input = scanner.nextLine();
-        String input2 = scanner.nextLine();
+        System.out.print("Введите выражение: ");
+        String exp = scanner.nextLine();
 
-        System.out.println(conculator(input, input2));
-    }
 
-    public static String conculator(String inputStr, String inputStr2) {
-        StringBuilder result = new StringBuilder();
+        exp = exp.replace("\"", "").replace(" ", "");
 
-        if (inputStr.length() > 10 || inputStr2.length() > 10) {
-            throw new RuntimeException("недопустимая длина строки (строка не должна быть длиннее 10 символов)");
+
+        String[] data;
+        char action;
+        if (exp.contains("+")) {
+            data = exp.split("\\+");
+            action = '+';
+        } else if (exp.contains("-")) {
+            data = exp.split("-");
+            action = '-';
+        } else if (exp.contains("*")) {
+            data = exp.split("\\*");
+            action = '*';
+        } else if (exp.contains("/")) {
+            data = exp.split("/");
+            action = '/';
+        } else {
+            throw new Exception("Некорректный знак действия");
         }
 
-        if (Character.isDigit(inputStr.charAt(0)) || Character.isDigit(inputStr2.charAt(0))) {
-            throw new RuntimeException("число не должно быть первым");
-        }
 
-        String sum = inputStr + inputStr2;
-        result.append("Concatenation: ").append(sum).append("\n");
+        if (action == '*' || action == '/') {
+            try {
+                Integer.parseInt(data[1]);
+            } catch (NumberFormatException e) {
+                throw new Exception("Строчку можно делить или умножать только на число");
+            }
 
-        String subtract = inputStr.replace(inputStr2, "");
-        result.append("Subtraction (removal): ").append(subtract).append("\n");
-
-        int times = 3;
-        StringBuilder multiplicationResult = new StringBuilder();
-        for (int i = 0; i < times; i++) {
-            multiplicationResult.append(inputStr);
-        }
-        result.append("Multiplication (repetition): ").append(multiplicationResult).append("\n");
-
-        if (multiplicationResult.length() > 40) {
-            result.append("...");
-        }
-
-        int[] numbers = new int[10];
-        for (int i = 0; i < numbers.length; i++) {
-            numbers[i] = i + 1;
-        }
-
-        for (int number : numbers) {
-            if (number <= 0 || number > 10) {
-                throw new RuntimeException("UnexpectedNumberError: " + Arrays.toString(numbers));
+            if (data[1].equals("0")) {
+                throw new Exception("Деление или умножение на ноль недопустимо");
             }
         }
 
-        return result.toString();
+
+        String result;
+        if (action == '+') {
+            result = data[0] + data[1];
+        } else if (action == '-') {
+            result = data[0].replace(data[1], "");
+        } else if (action == '*') {
+            int count = Integer.parseInt(data[1]);
+            if (count == 0) {
+                result = "";
+            } else {
+                result = new String(new char[count]).replace("\0", data[0]);
+            }
+        } else if (action == '/') {
+            int divisor = Integer.parseInt(data[1]);
+            if (divisor == 0) {
+                throw new Exception("Деление на ноль недопустимо");
+            }
+            int length = data[0].length() / divisor;
+            result = data[0].substring(0, length);
+        } else {
+            throw new Exception("Некорректный знак действия");
+        }
+
+
+        if (result.length() > 40) {
+            result = result.substring(0, 40) + "...";
+        }
+
+
+        System.out.println("\"" + result + "\"");
     }
 }
-            
