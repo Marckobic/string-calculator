@@ -46,7 +46,7 @@ public class Main {
         if (action == '+') {
             result = data[0] + data[1];
         } else if (action == '-') {
-            result = data[0].replace(data[1], "");
+            result = data[0].replace(data[1], " ");
         } else if (action == '*') {
             int count = Integer.parseInt(data[1]);
             if (count == 0) {
