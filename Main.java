@@ -1,100 +1,110 @@
+package org.example;
+
 import java.util.Scanner;
 
-public class Main {
-    public static void main(String[] args) throws Exception {
-        System.out.println("Введите ваше выражение в формате \"слово\" + \"слово/цифра\"");
-        Scanner in = new Scanner(System.in);
-        String text = in.nextLine().trim();
-        text = FirstNumb.firstNumb(text);
-        String[] str = text.split(" \\W ");
-        String word1 = str[0];
-        String[] oper = text.split("\"");
-        String operator = oper[2].replaceAll("\\d","").replaceAll(" ","");
-        String word3 = str[1];
-
+class InvalidExpressionException extends Exception {
+    public InvalidExpressionException(String message) {
+        super(message);
     }
 }
 
+public class StringCalculator {
 
-public class Sum {
-    public static String sum() throws Exception {
-        switch (operator){
-            case "+":
-                word1 = word1 + word3;
-                return TruncateString.truncateString(word1).replaceAll("\"","");           
-            default:
-                throw new Exception("Неподдерживаемая операция.");
-            }
- }
-}
+    // Константы для максимальной длины строки и результата
+    private static final int MAX_STRING_LENGTH = 10;
+    private static final int MAX_RESULT_LENGTH = 40;
 
-public class Mines {
-    public static String mines(String word1, String word3, String text){
-        String[] commonWords = text.split("\"");
-        String comw = commonWords[1];
-        String comw3 = commonWords[3];
-        StringBuilder res = new StringBuilder();
-        if (comw.contains(comw3)) {
-            word1 = comw.replaceAll(comw3, "");
-    
-        }else {
-                word1 = word1;
-        }
-    
-        return TruncateString.truncateString(word1).toString();
-        }
-    
-}
-
-public class Multiplication {
-    public static String multiplication(String word1, int numb) {
-        StringBuilder res = new StringBuilder();
-        res.append(String.valueOf(word1).repeat(Math.max(0, numb)));
-        return TruncateString.truncateString(res.toString());
+    // Метод для сложения строк
+    public String addStrings(String str1, String str2) {
+        String result = str1 + str2;
+        return formatResult(result);
     }
-}
 
-public class Division {
-    public static String division(String word1, int numb) throws Exception {
-        if(numb < 0){
-            throw new Exception("Делитель должен быть больше нуля.");
-        }
-        char[] chars = word1.toCharArray();
-        StringBuilder res = new StringBuilder();
-        for (int i = 0; i < chars.length / numb; i++) {
-            res.append(chars[i]);
-        }
-        return TruncateString.truncateString(res.toString());
+    // Метод для вычитания строки из строки
+    public String subtractStrings(String str1, String str2) {
+        String result = str1.replace(str2, "");
+        return formatResult(result);
     }
-}
 
-public class Numb {
-    public static int numb(String word3) throws Exception {
-        int number = 0;
-        
-        
-        if (word3.matches("\\d+")) {
-            number = Integer.parseInt(word3);
+    // Метод для умножения строки на число
+    public String multiplyString(String str, int times) throws InvalidExpressionException {
+        if (times < 1 || times > 10) {
+            throw new InvalidExpressionException("Число для умножения должно быть от 1 до 10");
+        }
+        String result = str.repeat(times);
+        return formatResult(result);
+    }
+
+    // Метод для деления строки на число
+    public String divideString(String str, int divisor) throws InvalidExpressionException {
+        if (divisor < 1 || divisor > 10) {
+            throw new InvalidExpressionException("Число для деления должно быть от 1 до 10");
+        }
+        int newLength = str.length() / divisor;
+        String result = str.substring(0, newLength);
+        return formatResult(result);
+    }
+
+    // Метод для сокращения строки до 40 символов, если она слишком длинная
+    private String formatResult(String result) {
+        if (result.length() > MAX_RESULT_LENGTH) {
+            return result.substring(0, MAX_RESULT_LENGTH) + "...";
+        }
+        return result;
+    }
+
+    // Основной метод для обработки выражения и вызова нужного метода
+    public String calculate(String expression) throws InvalidExpressionException {
+        expression = expression.trim();
+
+        // Простейшая валидация выражения по оператору
+        if (expression.contains("+")) {
+            String[] parts = expression.split("\\+");
+            return addStrings(trimQuotes(parts[0]), trimQuotes(parts[1]));
+        } else if (expression.contains("-")) {
+            String[] parts = expression.split("-");
+            return subtractStrings(trimQuotes(parts[0]), trimQuotes(parts[1]));
+        } else if (expression.contains("*")) {
+            String[] parts = expression.split("\\*");
+            return multiplyString(trimQuotes(parts[0]), Integer.parseInt(parts[1].trim()));
+        } else if (expression.contains("/")) {
+            String[] parts = expression.split("/");
+            return divideString(trimQuotes(parts[0]), Integer.parseInt(parts[1].trim()));
         } else {
-            throw new Exception("Строка не является числом.");
+            throw new InvalidExpressionException("Неподдерживаемая операция");
         }
-        
-        
-        if (number < 1 || number > 10) {
-            throw new Exception("Число должно быть от 1 до 10.");
-        }
-
-        return number;
     }
-{
 
+    // Метод для обрезки кавычек у строк
+    private String trimQuotes(String str) throws InvalidExpressionException {
+        str = str.trim();
+        if (str.startsWith("\"") && str.endsWith("\"")) {
+            str = str.substring(1, str.length() - 1);
+            if (str.length() > MAX_STRING_LENGTH) {
+                throw new InvalidExpressionException("Длина строки не должна превышать 10 символов");
+            }
+            return str;
+        } else {
+            throw new InvalidExpressionException("Неправильный формат строки");
+        }
+    }
 
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        StringCalculator calculator = new StringCalculator();
 
-try {
-    int result = Numb.numb("i");
-    return result; 
-} catch (Exception e) {
-    System.out.println("Ошибка: " + e.getMessage());
-}
-}
+        System.out.println("Введите выражение (например, \"Java\" + \"Code\"): ");
+        String expression = scanner.nextLine();
+
+        try {
+            String result = calculator.calculate(expression);
+            System.out.println("Результат: \"" + result + "\"");
+        } catch (InvalidExpressionException e) {
+            System.out.println("Ошибка: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            System.out.println("Ошибка: ожидается целое число после оператора");
+        } finally {
+            scanner.close();
+        }
+    }
 }
